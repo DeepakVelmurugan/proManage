@@ -67,6 +67,7 @@ class CRUD(object):
         '''
         if len(set(list(reqData.keys())) & set(self.valid_keys)) == len(self.valid_keys):
             table = self.get_table()
+            print(table)
             if table == None:
                 return self.error_message("Table not found")
             check_flag = self.story_id_exists(table,reqData['story_id'])
