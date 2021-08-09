@@ -68,7 +68,10 @@ class CRUD(object):
         if len(set(list(reqData.keys())) & set(self.valid_keys)) == len(self.valid_keys):
             table = self.get_table()
             if table == None:
-                return self.error_message()
+                return self.error_message("Table not found")
+            check_flag = self.story_id_exists(table,reqData['story_id'])
+            if check_flag!= None:
+                return self.error_message("Table already present")
             table.put_item(Item=reqData)
             return self.success_message()
         else:
@@ -164,14 +167,12 @@ class CRUD(object):
             idx = self.return_idx(table,reqData['story_id'],'story_related_pics',reqData['delete_value'])
             if idx < 0:
                 return self.error_message('Picture url not found')
-            updateExpression = "REMOVE #picture_url"
-            expressionAttributeNames = {"#picture_url" : check_flag['Item']['story_related_pics'][idx]}
+            updateExpression = "REMOVE story_related_pics[%d]" % (idx)
         try:
             if reqData['field_delete'] == 'story_related_pics':
                 table.update_item(
                     Key = key,
-                    UpdateExpression = updateExpression,
-                    ExpressionAttributeNames = expressionAttributeNames
+                    UpdateExpression = updateExpression
                 )
             else:
                 table.update_item(
@@ -185,4 +186,17 @@ class CRUD(object):
             print(e)
             return self.error_message("Error deleting")
 
-    
+    def select_story(self,story_id):
+        table = self.get_table()
+        if table is None:
+            return self.error_message("Unable to connect to database")
+        check_flag = self.story_id_exists(table,story_id)
+        if check_flag is None:
+            return self.error_message('Story id does not exists')
+        try:
+            response = table.get_item(Key = {'story_id' : story_id})
+        except ClientError as e:
+            return self.error_message(e.response['Error']['Message'])
+        else:
+            return response['Item']
+        

@@ -24,7 +24,7 @@ For Update:
         }
         {
             "story_id" : "1",
-            "field_updated": "story_comment”,
+            "field_updated": "story_comments”,
             "new_value" : {"test_user1|2021:07:30 06:50:30" : “updated comment” }
         }
 
@@ -42,3 +42,8 @@ For Delete:
             "delete_value" : "https://github.com/karpathy/minGPT/blob/master/mingpt.jpg"
         }
 
+For Select:
+
+Methods : GET
+Headers: 
+story_id : 1
