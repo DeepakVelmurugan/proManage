@@ -20,6 +20,7 @@ class CRUD(object):
             self.dynamo = boto3.resource(self.db_name)
             return self.success_message()
         except Exception as e:
+            print(e)
             return self.error_message('Unable to connect to database')
 
     def get_table(self):
@@ -34,6 +35,8 @@ class CRUD(object):
     def story_id_exists(self,table,story_id):
         try:
             item = table.get_item(Key={'story_id':story_id})
+            print(story_id)
+            print(item)
             if 'Item' not in item.keys():
                 item = None
         except:

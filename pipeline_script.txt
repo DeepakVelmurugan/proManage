@@ -1,0 +1,26 @@
+Jenkins pipeline script
+
+
+node{
+    stage('SCM Checkout'){
+        git branch: 'develop', url: 'https://github.com/DeepakVelmurugan/proManage'
+    }
+    stage('Build Docker Image'){
+        withCredentials([usernamePassword(credentialsId: 'accessID', passwordVariable: 'ACCESSKEY', usernameVariable: 'ACCESSID')]){
+            sh "cd NoSQLBackend docker build -t deepakvelmurugan/nosqlbackend --build-arg AWS_DEFAULT_REGION='ap-south-1' --build-arg AWS_ACCESS_KEY_ID=$ACCESSID --build-arg AWS_SECRET_ACCESS_KEY=$ACCESSKEY ."
+        }
+    }
+    stage('Push Docker Image'){
+        withCredentials([string(credentialsId: 'docker-pwd', variable: 'dockerHubPwd')]) {
+            sh "cd NoSQLBackend docker login -u deepakvelmurugan -p ${dockerHubPwd}"
+            
+        }
+        sh 'cd NoSQLBackend docker push deepakvelmurugan/nosqlbackend'
+    }
+    stage('Run Container on DEV server'){
+        sshagent(['pemPwd']) {
+            def dockerRun = "docker run -p 8080:8000 -d --name nosqlimage deepakvelmurugan/nosqlbackend"
+            sh "ssh -o  StrictHostKeyChecking=no ec2-user@13.232.77.41 ${dockerRun}"
+        }
+    }
+}
